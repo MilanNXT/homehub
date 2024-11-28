@@ -27,8 +27,8 @@ entryPoints:
 
   websecure:
     address: :443
-
-  traefik-dashboard:
+  
+  traefik:
     address: :8081
 
 ################################################################
@@ -40,13 +40,15 @@ entryPoints:
 #
 # Optional
 #
-#log:
+log:
   # Log level
   #
   # Optional
   # Default: "ERROR"
   #
-#  level: DEBUG
+  # level: DEBUG
+  level: ERROR
+  # level: INFO
 
   # Sets the filepath for the traefik log. If not specified, stdout will be used.
   # Intermediate directories are created if necessary.
@@ -110,23 +112,23 @@ api:
   # Optional
   # Default: true
   #
-  dashboard: false
+  dashboard: true
 
 ################################################################
 # Ping configuration
 ################################################################
 
 # Enable ping
-ping:
+#ping:
   # Name of the related entry point
   #
   # Optional
   # Default: "traefik"
   #
 #  entryPoint: traefik
-  enabled: true
-  manualRouting: true
-  terminatingStatusCode: 204
+  # enabled: true
+  # manualRouting: true
+  # terminatingStatusCode: 204
 
 ################################################################
 # Docker configuration backend
