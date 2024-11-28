@@ -1,0 +1,145 @@
+services:
+  traefik:
+    image: traefik:v3.2
+    container_name: traefik
+    restart: always
+    # ports:
+    #   - "8081:8081"
+    #   - "443:443"
+    #   - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /opt/homehub/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+    network_mode: host
+
+  whoami:
+    image: traefik/whoami
+    container_name: whoami
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`whoami.localhost`)"
+      - "traefik.http.routers.whoami.entrypoints=web"
+    network_mode: host
+
+  portainer:
+    depends_on:
+      traefik:
+        condition: service_started
+        required: false
+    image: portainer/portainer-ce:2.21.4
+    container_name: portainer
+    restart: always
+    # ports:
+    #   - "8000:8000"
+    #   - "9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/homehub/portainer/data:/data
+    network_mode: host
+
+  homeassistant:
+    depends_on:
+      traefik:
+        condition: service_started
+        required: false
+      matter-server:
+        condition: service_started
+        required: false
+      zigbee2mqtt:
+        condition: service_started
+        required: false 
+    container_name: homeassistant
+    image: ghcr.io/home-assistant/home-assistant:stable
+    privileged: true
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Prague
+    # ports:
+    #   - "8123:8123"
+    volumes:
+      - /opt/homehub/homeassistant/config:/config
+      - /opt/homehub/letsencrypt:/etc/letsencrypt:ro
+      - /run/dbus:/run/dbus:ro  
+    network_mode: host
+
+  matter-server:
+    container_name: matter-server
+    image: ghcr.io/home-assistant-libs/python-matter-server:stable
+    restart: unless-stopped
+    security_opt:
+      - apparmor=unconfined
+    # ports:
+    #   - 5580:5580
+    volumes:
+      - /opt/homehub/matter/data:/data
+      - /run/dbus:/run/dbus:ro
+    network_mode: host
+
+  zigbee2mqtt:
+    depends_on:
+      traefik:
+        condition: service_started
+        required: false
+      mosquitto:
+        condition: service_started
+        required: false
+    container_name: zigbee2mqtt
+    image: koenkk/zigbee2mqtt
+    restart: unless-stopped
+    volumes:
+      - /opt/homehub/zigbee2mqtt/data:/app/data
+      - /opt/homehub/letsencrypt:/etc/letsencrypt:ro
+      - /run/udev:/run/udev:ro
+    # ports:
+    #   - 8081:8081
+    environment:
+      - TZ=Europe/Prague
+    devices:
+      - /dev/serial/by-id/usb-ITead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_32dd67206ee7ed11970f6d6262c613ac-if00-port0:/dev/ttyACM0
+    network_mode: host
+
+  mosquitto:
+    image: eclipse-mosquitto
+    container_name: mosquitto
+    restart: unless-stopped
+    # ports:
+    #   - 1883:1883
+    #   - 9001:9001  
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/homehub/mosquitto:/mosquitto
+      - /opt/homehub/mosquitto/data:/mosquitto/data
+      - /opt/homehub/mosquitto/log:/mosquitto/log
+    network_mode: host
+  
+  # certbot:
+  #   container_name: certbot
+  #   image: ghcr.io/home-assistant-libs/python-matter-server:stable
+  #   restart: unless-stopped
+  #   security_opt:
+  #     - apparmor=unconfined
+  #   volumes:
+  #     - /opt/homehub/letsencrypt:/etc/letsencrypt
+  #     - /opt/homehub/certbot/data:/data
+  #     - /run/dbus:/run/dbus:ro
+  #    networks:
+  #     - home-docker
+
+
+# networks:
+#   home-docker:
+#     name: home-docker
+#     driver: bridge
+#     driver_opts:
+#       com.docker.network.bridge.default_bridge: "true"
+#       com.docker.network.bridge.enable_icc: "true"
+#       com.docker.network.bridge.enable_ip_masquerade: "true"
+#       com.docker.network.bridge.host_binding_ipv4: "0.0.0.0"
+#       com.docker.network.driver.mtu: "1500"
+#     ipam:
+#       driver: default
+#       config:
+#         - subnet: "10.0.0.0/16"
+#           gateway: "10.0.0.1"
+#     attachable: false
+#     internal: false 
