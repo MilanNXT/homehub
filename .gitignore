@@ -1,0 +1,10 @@
+homeassistant/
+!homeassistant/**/*.yaml */
+matter/
+mosquitto/data/
+mosquitto/log/
+portainer/
+zigbee2mqtt/data/
+zigbee2mqtt/data/log/
+!zigbee2mqtt/data/configuration.yaml
+letsencrypt/
