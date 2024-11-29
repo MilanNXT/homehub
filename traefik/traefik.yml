@@ -25,7 +25,9 @@ entryPoints:
   websecure:
     address: :443
   traefik:
-    address: :8090
+    address: :8082
+  ping:
+    address: :8081
 
 ################################################################
 # Traefik logs configuration
@@ -43,8 +45,8 @@ log:
   # Default: "ERROR"
   #
   # level: DEBUG
-  level: ERROR
-  # level: INFO
+  # level: ERROR
+  level: INFO
 
   # Sets the filepath for the traefik log. If not specified, stdout will be used.
   # Intermediate directories are created if necessary.
@@ -121,7 +123,7 @@ ping:
   # Optional
   # Default: "traefik"
   #
-  entryPoint: traefik
+  entryPoint: ping
   manualRouting: false
   terminatingStatusCode: 204
 
@@ -153,6 +155,53 @@ providers:
     # Default: true
     #
     exposedByDefault: false
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: letsencrypt@musec.cz
+      storage: /etc/traefik/acme.json
+      httpChallenge:
+        entryPoint: web
+
+
+http:
+  routers:
+    secure:
+      entryPoints:
+        - websecure
+      rule: "Host(`cz-prg-edge.duckdns.org`, `home.musec.cz`)" 
+      tls:
+        certResolver: letsencrypt
+      service: letsencrypt_svc
+
+  services:
+    letsencrypt_svc:
+      loadBalancer:
+        servers:
+          - url: "http://backend:80"
+
+
+    dashboard:
+      entryPoints:
+        - ping
+      rule: "PathPrefix(`/dashboard`)"
+      service: "dashboard@internal"
+      middlewares:
+        - dashboard_redirect
+        - dashboard_stripprefix
+
+  middlewares:
+    dashboard_redirect:
+      replacePathRegex:
+        regex: '^(http:\/\/(\[[\w:.]+\]|[\w\._-]+)(:\d+)?)\/$'
+        replacement: "${1}/dashboard/"
+    dashboard_stripprefix:
+      stripPrefix:
+        prefixes: 
+          - '/dashboard/'
+          - '/dashboard'
+
 
 # experimental:
 #   plugins:

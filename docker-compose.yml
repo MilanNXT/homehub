@@ -10,6 +10,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /opt/homehub/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - /opt/homehub/traefik/acme.json:/etc/traefik/acme.json
     network_mode: host
 
   whoami:
