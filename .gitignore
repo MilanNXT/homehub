@@ -1,9 +1,30 @@
+# Ignore everything in the homeassistant directory
 homeassistant/**
+# Re-include YAML files in the homeassistant directory
+!homeassistant/
+!homeassistant/config/
 !homeassistant/**/*.yaml
+
+# Ignore everything in the letsencrypt directory
 letsencrypt/**
+
+# Ignore everything in the matter directory
 matter/**
+
+# Ignore everything in the mosquitto directory
 mosquitto/**
+# Re-include CONF files in the mosquitto directory
+!mosquitto/
+!mosquitto/config/
+!mosquitto/data/
 !mosquitto/**/*.conf
+
+# Ignore everything in the portainer directory
 portainer/**
+
+# Ignore everything in the zigbee2mqtt directory
 zigbee2mqtt/**
+# Re-include YAML files in the zigbee2mqtt directory
+!zigbee2mqtt/
+!zigbee2mqtt/data/
 !zigbee2mqtt/**/*.yaml

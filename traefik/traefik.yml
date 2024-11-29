@@ -1,8 +1,6 @@
 ################################################################
 #
-# Configuration sample for Traefik v2.
-#
-# For Traefik v1: https://github.com/traefik/traefik/blob/v1.7/traefik.sample.toml
+# Configuration for Traefik
 #
 ################################################################
 
@@ -24,12 +22,10 @@ global:
 entryPoints:
   web:
     address: :80
-
   websecure:
     address: :443
-  
   traefik:
-    address: :8081
+    address: :8090
 
 ################################################################
 # Traefik logs configuration
@@ -119,16 +115,15 @@ api:
 ################################################################
 
 # Enable ping
-#ping:
+ping:
   # Name of the related entry point
   #
   # Optional
   # Default: "traefik"
   #
-#  entryPoint: traefik
-  # enabled: true
-  # manualRouting: true
-  # terminatingStatusCode: 204
+  entryPoint: traefik
+  manualRouting: false
+  terminatingStatusCode: 204
 
 ################################################################
 # Docker configuration backend

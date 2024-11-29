@@ -17,9 +17,13 @@ services:
     container_name: whoami
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.whoami.rule=Host(`whoami.localhost`)"
+      - "traefik.http.routers.whoami.rule=PathPrefix(`/whoami`)"
       - "traefik.http.routers.whoami.entrypoints=web"
-    # network_mode: host
+      - "traefik.http.services.whoami.loadbalancer.server.port=8888"
+    command:
+      - --port=8888
+      - --verbose
+    network_mode: host
 
   portainer:
     depends_on:
@@ -30,7 +34,7 @@ services:
     container_name: portainer
     restart: always
     # ports:
-    #   - "8000:8000"
+    #   - "9000:9000"
     #   - "9443:9443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -56,6 +60,11 @@ services:
       - TZ=Europe/Prague
     # ports:
     #   - "8123:8123"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.homeassistant.rule=Path(`/ha`)"
+      - "traefik.http.routers.homeassistant.entrypoints=websecure"
+      - "traefik.http.services.homeassistant.loadbalancer.server.port=8123"
     volumes:
       - /opt/homehub/homeassistant/config:/config
       - /opt/homehub/letsencrypt:/etc/letsencrypt:ro
@@ -86,6 +95,11 @@ services:
     container_name: zigbee2mqtt
     image: koenkk/zigbee2mqtt
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.zigbee2mqtt.rule=PathPrefix(`/zigbee2mqtt`)"
+      - "traefik.http.routers.zigbee2mqtt.entrypoints=web"
+      - "traefik.http.services.zigbee2mqtt.loadbalancer.server.port=8080"
     volumes:
       - /opt/homehub/zigbee2mqtt/data:/app/data
       - /opt/homehub/letsencrypt:/etc/letsencrypt:ro
